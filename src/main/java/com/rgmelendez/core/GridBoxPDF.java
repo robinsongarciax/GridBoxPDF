@@ -391,6 +391,7 @@ public class GridBoxPDF {
 
         PDFont font = getFont(fontName, fontStyle);
         float fontSize = this.fontSize;
+        GBFont gbFont = new GBFont(font, fontSize, fontColor);
 
         evaluateAvailableSpace();
 
@@ -431,7 +432,7 @@ public class GridBoxPDF {
             drawLine(xLeft - 0.08f, yBottom, xRight + 0.08f, yBottom);
         }
 
-        drawText(content, font, fontSize, tx, ty);
+        drawText(content, gbFont, tx, ty);
 
         switch (nextPosition) {
             case 0 -> xPosition += width;
@@ -465,6 +466,7 @@ public class GridBoxPDF {
 
         PDFont font = getFont(fontName, fontStyle);
         float fontSize = this.fontSize;
+        GBFont gbFont = new GBFont(font, fontSize, fontColor);
 
         float x = xPosition;
         width = width == 0 ? pageWidth - x - marginRight : width * pageUnit;
@@ -508,7 +510,7 @@ public class GridBoxPDF {
                 drawLine(xLeft - 0.08f, yBottom, xRight + 0.08f, yBottom);
             }
 
-            drawText(line, font, fontSize, tx, ty);
+            drawText(line, gbFont, tx, ty);
             yPosition -= tempH;
             evaluateAvailableSpace();
         }
@@ -523,8 +525,9 @@ public class GridBoxPDF {
         }
         evaluateAvailableSpace();
         PDFont font = getFont(fontName, fontStyle);
-
         float fontSize = this.fontSize;
+        GBFont gbFont = new GBFont(font, fontSize, fontColor);
+
         float tempH = fontSize + 3;
         float x = xPosition;
         float y = yPosition;
@@ -557,7 +560,7 @@ public class GridBoxPDF {
                             lineBuilder.append(word);
                             currentLineWidth += extraWidth + wordWidth;
                         } else {
-                            drawText(lineBuilder.toString(), font, fontSize, x, ty);
+                            drawText(lineBuilder.toString(), gbFont, x, ty);
                             lineBreak(tempH);
                             evaluateAvailableSpace();
                             x = xPosition;
@@ -571,7 +574,7 @@ public class GridBoxPDF {
                     }
                 }
                 if (!lineBuilder.isEmpty()) {
-                    drawText(lineBuilder.toString(), font, fontSize, x, ty);
+                    drawText(lineBuilder.toString(), gbFont, x, ty);
                     evaluateAvailableSpace();
                     if (i == totalParagraphs - 1) {
                         xPosition += currentLineWidth;
@@ -590,13 +593,16 @@ public class GridBoxPDF {
 
     }
 
-    private void drawText(String text, PDFont font, float fontSize, float tx, float ty) {
+    private void drawText(String text, GBFont font, float tx, float ty) {
         try {
+            writer.saveGraphicsState();
             writer.beginText();
-            writer.setFont(font, fontSize);
+            writer.setFont(font.name(), font.size());
+            writer.setNonStrokingColor(font.color());
             writer.newLineAtOffset(tx, ty);
             writer.showText(text);
             writer.endText();
+            writer.restoreGraphicsState();
         } catch (Exception ex) {
             throw new RuntimeException(ex);
         }

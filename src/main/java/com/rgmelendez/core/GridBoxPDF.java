@@ -120,18 +120,26 @@ public class GridBoxPDF {
         initialize();
     }
 
-    public void close(String fileName) throws IOException {
+    public void close(String fileName) {
         printFooter();
-        writer.close();
-        document.save(new File(fileName));
-        document.close();
+        try {
+            writer.close();
+            document.save(new File(fileName));
+            document.close();
+        } catch (IOException e) {
+            throw new RuntimeException("It is not possible to save the document! " + e.getMessage());
+        }
     }
 
-    public void close(ByteArrayOutputStream pdfStream) throws IOException {
+    public void close(ByteArrayOutputStream pdfStream) {
         printFooter();
-        writer.close();
-        document.save(pdfStream);
-        document.close();
+        try {
+            writer.close();
+            document.save(pdfStream);
+            document.close();
+        } catch (IOException e) {
+            throw new RuntimeException("It is not possible to save the document! " + e.getMessage());
+        }
     }
 
     public void addPage() {
@@ -153,7 +161,7 @@ public class GridBoxPDF {
             document.addPage(pdPage);
             writer = new PDPageContentStream(document, pdPage);
         } catch (IOException ex) {
-            new RuntimeException(ex);
+            throw new RuntimeException(ex);
         }
 
         setXY(0, 0);
@@ -377,13 +385,14 @@ public class GridBoxPDF {
             content = "\u00a0";
         }
 
-        evaluateAvailableSpace();
         if (!evaluateAlignment(alignment) ) {
             throw new IllegalArgumentException ("Alignment option not valid!");
         }
 
         PDFont font = getFont(fontName, fontStyle);
         float fontSize = this.fontSize;
+
+        evaluateAvailableSpace();
 
         float contentWidth = 0;
         try {

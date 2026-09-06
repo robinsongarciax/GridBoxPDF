@@ -27,7 +27,7 @@ public class GridBoxPDF {
     private PDDocument document;
     private PDPageContentStream writer;
     private PDRectangle pageFormat = PDRectangle.LETTER;
-    private final GridBoxFont fontManager = new GridBoxFont();
+    private final GridBoxFontManager fontManager = new GridBoxFontManager();
 
     public enum PageFormat {
         LETTER, A4, LEGAL, A5

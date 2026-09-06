@@ -16,13 +16,13 @@ import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
 
-public class GridBoxFont {
+public class GridBoxFontManager {
 
     private final Map<String, FontFamily> customFontsStreams = new HashMap<>();
     private final Map<String, PDFont> baseFontsCache = new HashMap<>();
     private final Map<String, PDFont> customFontsCache = new HashMap<>();
 
-    public GridBoxFont() {
+    public GridBoxFontManager() {
         addDefaultCustomFonts();
     }
 

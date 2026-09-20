@@ -35,6 +35,22 @@ import java.util.HexFormat;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Main class for creating PDF documents with GridBoxPDF.
+ *
+ * <p>Default configuration:</p>
+ * <ul>
+ *   <li>Paper: Letter</li>
+ *   <li>Orientation: Portrait</li>
+ *   <li>Margins: 10 mm</li>
+ *   <li>Unit: millimeters</li>
+ *   <li>Font: Helvetica</li>
+ *   <li>Font size: 12</li>
+ * </ul>
+ *
+ * <p>Content is positioned from top to bottom and from left to right
+ * within the document margins.</p>
+ */
 public class GridBoxPDF {
 
     private String fileName;
@@ -44,8 +60,21 @@ public class GridBoxPDF {
     private PDRectangle pageFormat = PDRectangle.LETTER;
     private final GridBoxFontManager fontManager = new GridBoxFontManager();
 
+    /**
+     * Supported page formats.
+     */
     public enum PageFormat {
-        LETTER, A4, LEGAL, A5
+        /** US Letter format. */
+        LETTER,
+
+        /** ISO A4 format. */
+        A4,
+
+        /** US Legal format. */
+        LEGAL,
+
+        /** ISO A5 format. */
+        A5
     }
 
     private String pageOrientation;
@@ -67,8 +96,14 @@ public class GridBoxPDF {
         }
     }
 
+    /**
+     * Page orientation.
+     */
     public enum PageOrientation {
+        /** Landscape orientation. */
         LANDSCAPE,
+
+        /** Portrait orientation. */
         PORTRAIT
     }
 
@@ -107,10 +142,28 @@ public class GridBoxPDF {
     // images
     private final Map<String, PDImageXObject> images = new HashMap<>();
 
+    /**
+     * Creates a new PDF document using the default configuration.
+     *
+     * <p>The default configuration uses Letter paper, portrait
+     * orientation, 10 mm margins, Helvetica as the default font,
+     * and millimeters as the default unit.</p>
+     */
     public GridBoxPDF() {
         initialize();
     }
 
+    /**
+     * Creates a PDF document with the specified page format, orientation,
+     * and measurement unit.
+     *
+     * @param pageFormat page format to use for the document
+     * @param pageOrientation page orientation to use for the document
+     * @param pageUnit measurement unit used throughout the document
+     * @see PageFormat
+     * @see PageOrientation
+     * @see PageUnit
+     */
     public GridBoxPDF(PageFormat pageFormat, PageOrientation pageOrientation, PageUnit pageUnit) {
         switch (pageFormat) {
             case A4:
@@ -133,6 +186,12 @@ public class GridBoxPDF {
         initialize();
     }
 
+    /**
+     * Closes the PDF document and writes it to the specified file.
+     *
+     * @param fileName path and name of the output PDF file
+     * @throws RuntimeException if the document cannot be saved
+     */
     public void close(String fileName) {
         printFooter();
         try {
@@ -144,6 +203,12 @@ public class GridBoxPDF {
         }
     }
 
+    /**
+     * Closes the PDF document and writes it to the specified output stream.
+     *
+     * @param pdfStream output stream that receives the generated PDF
+     * @throws RuntimeException if the document cannot be saved
+     */
     public void close(ByteArrayOutputStream pdfStream) {
         printFooter();
         try {
@@ -155,6 +220,13 @@ public class GridBoxPDF {
         }
     }
 
+    /**
+     * Adds a new page to the document.
+     *
+     * <p>The current page is completed before the new page is created.
+     * If a footer is defined, it is rendered before the new page.
+     * If a header is defined, it is rendered at the start of the new page.</p>
+     */
     public void addPage() {
         if (pageNumber > 0 && !isFooterWriting && !isHeaderWriting) {
             isFooterWriting = true;

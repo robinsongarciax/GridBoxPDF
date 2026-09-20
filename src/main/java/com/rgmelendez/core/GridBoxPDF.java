@@ -159,7 +159,9 @@ public class GridBoxPDF {
         if (pageNumber > 0 && !isFooterWriting && !isHeaderWriting) {
             isFooterWriting = true;
             this.setXY(0, -(pageBreak - 4)/pageUnit);
+            GBFontInfo fontInfo = saveFontState();
             footer();
+            restoreFontState(fontInfo);
             isFooterWriting = false;
         }
         PDPage pdPage = new PDPage(pageFormat);
@@ -180,7 +182,9 @@ public class GridBoxPDF {
         setXY(0, 0);
         if (!isFooterWriting && !isHeaderWriting) {
             isHeaderWriting = true;
+            GBFontInfo fontInfo = saveFontState();
             header();
+            restoreFontState(fontInfo);
             this.lineBreak();
             isHeaderWriting = false;
         }
@@ -190,7 +194,9 @@ public class GridBoxPDF {
         if (pageNumber > 0) {
             isFooterWriting = true;
             this.setXY(0, -(pageBreak - 4)/pageUnit);
+            GBFontInfo fontInfo = saveFontState();
             footer();
+            restoreFontState(fontInfo);
             isFooterWriting = false;
         }
     }
@@ -322,6 +328,17 @@ public class GridBoxPDF {
         }
 
         return fontManager.getFont(name, style);
+    }
+
+    private GBFontInfo saveFontState() {
+        return new GBFontInfo(fontName, fontStyle, fontSize, fontColor);
+    }
+
+    private void restoreFontState(GBFontInfo fontInfo) {
+        fontName = fontInfo.name();
+        fontStyle = fontInfo.style();
+        fontSize = fontInfo.size();
+        fontColor = fontInfo.color();
     }
 
     public void setFontColor(Color color) {

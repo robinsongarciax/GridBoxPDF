@@ -177,11 +177,7 @@ public class GridBoxFontManager {
     }
 
     private void addDefaultCustomFonts() {
-        if (getClass().getResource("/fonts/liberation_sans/") == null) {
-            throw new RuntimeException("Font not found in resources: /fonts/liberation_sans/");
-        }
 
-        registerBuiltInFont("/fonts/liberation_sans/", "LiberationSans");
     }
 
     private void registerBuiltInFont (String resourcePath, String fontFamily)  {

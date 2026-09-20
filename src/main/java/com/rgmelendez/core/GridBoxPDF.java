@@ -93,6 +93,7 @@ public class GridBoxPDF {
     private final Map<String, PDImageXObject> images = new HashMap<>();
 
     public GridBoxPDF() {
+        initialize();
     }
 
     public GridBoxPDF(PageFormat pageFormat, PageOrientation pageOrientation, PageUnit pageUnit) {
@@ -113,10 +114,7 @@ public class GridBoxPDF {
         }
 
         this.pageUnit = pageUnit.getValue();
-    }
 
-    public void create() {
-        document = new PDDocument();
         initialize();
     }
 
@@ -187,6 +185,8 @@ public class GridBoxPDF {
     }
 
     private void initialize() {
+        document = new PDDocument();
+
         pageHeight = pageFormat.getHeight();
         pageWidth = pageFormat.getWidth();
         setDefaultMargins();

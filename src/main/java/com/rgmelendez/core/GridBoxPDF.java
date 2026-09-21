@@ -49,7 +49,9 @@ import java.util.Map;
  * </ul>
  *
  * <p>Content is positioned from top to bottom and from left to right
- * within the document margins.</p>
+ * within the document margins.
+ * Positions, dimensions, and margins are expressed in the
+ * unit configured for the document.</p>
  */
 public class GridBoxPDF {
 
@@ -79,10 +81,20 @@ public class GridBoxPDF {
 
     private String pageOrientation;
 
+    /**
+     * Measurement units supported by GridBoxPDF.
+     */
     public enum PageUnit {
+        /** Centimeters. */
         CENTIMETERS(PDFConfig.PAGEUNIT_CM),
+
+        /** Millimeters. */
         MILIMETERS(PDFConfig.PAGEUNIT_MM),
+
+        /** Inches. */
         INCHES(PDFConfig.PAGEUNIT_INCH),
+
+        /** PDF points. */
         POINTS(PDFConfig.PAGEUNIT_PTS);
 
         private final float value;
@@ -91,6 +103,11 @@ public class GridBoxPDF {
             this.value = value;
         }
 
+        /**
+         * Returns the conversion factor from this unit to PDF points.
+         *
+         * @return conversion factor to PDF points
+         */
         public float getValue() {
             return value;
         }
@@ -157,9 +174,9 @@ public class GridBoxPDF {
      * Creates a PDF document with the specified page format, orientation,
      * and measurement unit.
      *
-     * @param pageFormat page format to use for the document
-     * @param pageOrientation page orientation to use for the document
-     * @param pageUnit measurement unit used throughout the document
+     * @param pageFormat Page format to use for the document
+     * @param pageOrientation Page orientation to use for the document
+     * @param pageUnit Measurement unit used throughout the document
      * @see PageFormat
      * @see PageOrientation
      * @see PageUnit
@@ -189,7 +206,7 @@ public class GridBoxPDF {
     /**
      * Closes the PDF document and writes it to the specified file.
      *
-     * @param fileName path and name of the output PDF file
+     * @param fileName Path and name of the output PDF file
      * @throws RuntimeException if the document cannot be saved
      */
     public void close(String fileName) {
@@ -206,7 +223,7 @@ public class GridBoxPDF {
     /**
      * Closes the PDF document and writes it to the specified output stream.
      *
-     * @param pdfStream output stream that receives the generated PDF
+     * @param pdfStream Output stream that receives the generated PDF
      * @throws RuntimeException if the document cannot be saved
      */
     public void close(ByteArrayOutputStream pdfStream) {
@@ -273,6 +290,11 @@ public class GridBoxPDF {
         }
     }
 
+    /**
+     * Returns the number of the current page.
+     *
+     * @return current page number, starting at {@code 1}
+     */
     public int getPageNumber() {
         return pageNumber;
     }
@@ -286,45 +308,107 @@ public class GridBoxPDF {
         setFont("HELVETICA");
     }
 
-    public void setDefaultMargins() {
+    private void setDefaultMargins() {
         setMargins(10, 10, 10);
     }
 
+    /**
+     * Sets the margins used for document content.
+     *
+     * <p>Margin values are expressed in the unit configured for the document.</p>
+     *
+     * @param left Left margin value
+     * @param right Right margin value
+     * @param top Top margin value
+     */
     public void setMargins(float left, float right, float top) {
         marginLeft = left * pageUnit;
         marginRight = right * pageUnit;
         marginTop = top * pageUnit;
     }
 
+    /**
+     * Sets both the horizontal and vertical positions of the current text cursor simultaneously.
+     *
+     * <p>The positions are relative to the document content area,
+     * taking the top and left margins into account.</p>
+     *
+     * @param x Horizontal position from the left margin.
+     * @param y Vertical position from the top margin.
+     */
     public void setXY(float x, float y) {
         setX(x);
         setY(y);
     }
 
+    /**
+     * Sets the horizontal position of the current text cursor.
+     *
+     * <p>The position is relative to the document content area,
+     * taking the left margin into account.</p>
+     *
+     * @param x Horizontal position from the left margin.
+     */
     public void setX(float x) {
         x *= pageUnit;
         float position = x < 0 ? (pageWidth - marginRight) : marginLeft;
         xPosition = position + x;
     }
 
+    /**
+     * Sets the vertical position of the current text cursor.
+     *
+     * <p>The position is relative to the document content area,
+     * taking the top margin into account.</p>
+     *
+     * @param y Vertical position from the top margin.
+     */
     public void setY(float y) {
         y *= pageUnit;
         float position = y < 0 ? marginBottom : (pageHeight - marginTop);
         yPosition = position - y;
     }
 
+    /**
+     * Returns the current horizontal position of the text cursor.
+     *
+     * <p>The position is relative to the document content area,
+     * taking the left margin into account.</p>
+     *
+     * @return The horizontal position from the left margin.
+     */
     public float getX() {
         return xPosition / pageUnit;
     }
 
+    /**
+     * Returns the current vertical position of the text cursor.
+     *
+     * <p>The position is relative to the document content area,
+     * taking the top margin into account.</p>
+     *
+     * @return The vertical position from the top margin.
+     */
     public float getY() {
         return (pageHeight - yPosition - marginTop) / pageUnit;
     }
 
+    /**
+     * Moves the current cursor to the next line using the height of the
+     * last text element.
+     */
     public void lineBreak() {
         lineBreak(currentHeightSize);
     }
 
+    /**
+     * Moves the current cursor to the next line using the specified height.
+     *
+     * <p>The height is always expressed in PDF points, regardless of the
+     * unit configured for the document.</p>
+     *
+     * @param height Line height in PDF points
+     */
     public void lineBreak(float height) {
         xPosition = marginLeft;
         yPosition -= height;
@@ -345,10 +429,27 @@ public class GridBoxPDF {
         }
     }
 
+    /**
+     * Sets the distance from the bottom of the page at which an automatic
+     * page break is triggered.
+     *
+     * <p>The value is measured upward from the bottom edge of the page
+     * and is expressed in the unit configured for the document.</p>
+     *
+     * @param height Distance from the bottom edge of the page
+     */
     public void setPageBreak(float height) {
         pageBreak = height * pageUnit;
     }
 
+    /**
+     * Loads a font from an external file path and adds it to the document.
+     *
+     * <p>The font is loaded from the file system.</p>
+     *
+     * @param fontPath Path to the directory containing the font files
+     * @param fontName Name used to reference the font in the document
+     */
     public void addFontFromFile(String fontPath, String fontName) {
         try {
             fontManager.addCustomFontsFiles(fontPath, fontName);
@@ -358,6 +459,14 @@ public class GridBoxPDF {
 
     }
 
+    /**
+     * Loads a font from the application resources and adds it to the document.
+     *
+     * <p>The font is loaded from the application's classpath resources.</p>
+     *
+     * @param fontPath Path to the font resource
+     * @param fontName Name used to reference the font in the document
+     */
     public void addFontFromSource(String fontPath, String fontName) {
         try {
             fontPath = fontPath.startsWith("/") ? fontPath.substring(1) : fontPath;
@@ -367,14 +476,42 @@ public class GridBoxPDF {
         }
     }
 
+    /**
+     * Sets the current font.
+     *
+     * <p>If {@code name} is empty, the currently selected font is reused.</p>
+     *
+     * @param name Font name, or an empty string to reuse the current font
+     */
     public void setFont(String name) {
         setFont(name, "", 0);
     }
 
+    /**
+     * Sets the current font and style.
+     *
+     * <p>If {@code name} is empty, the currently selected font is reused.
+     * The style can be empty for regular text, {@code I} for italic,
+     * {@code B} for bold, or {@code BI} for bold italic.</p>
+     *
+     * @param name Font name, or an empty string to reuse the current font
+     * @param style Font style: empty, {@code I}, {@code B}, or {@code BI}
+     */
     public void setFont(String name, String style) {
         setFont(name, style, 0);
     }
 
+    /**
+     * Sets the current font, style, and size.
+     *
+     * <p>If {@code name} is empty, the currently selected font is reused.
+     * The style can be empty for regular text, {@code I} for italic,
+     * {@code B} for bold, or {@code BI} for bold italic.</p>
+     *
+     * @param name Font name, or an empty string to reuse the current font
+     * @param style Font style: empty, {@code I}, {@code B}, or {@code BI}
+     * @param size Font size in PDF points
+     */
     public void setFont(String name, String style, float size) {
         if (size > 0) {
             fontSize = size;
@@ -413,26 +550,81 @@ public class GridBoxPDF {
         fontColor = fontInfo.color();
     }
 
+    /**
+     * Sets the font color using a {@link Color} object.
+     *
+     * <p>All subsequent text rendered using this instance will use the specified color.</p>
+     *
+     * @param color {@link Color} to apply to the text. Must not be {@code null}.
+     */
     public void setFontColor(Color color) {
         fontColor = color;
     }
 
+    /**
+     * Sets the font color using RGB color components.
+     *
+     * <p>All subsequent text rendered using this instance will use the specified color.
+     * The RGB values are expected to be in the standard 8-bit range (0 to 255).</p>
+     *
+     * @param r Red component (0–255).
+     * @param g Green component (0–255).
+     * @param b Blue component (0–255).
+     */
     public void setFontColor(int r, int g, int b) {
         setFontColor(new Color(r, g, b));
     }
 
+    /**
+     * Sets the background/fill color for shapes or text blocks.
+     *
+     * <p>This color is only applied if fill is enabled (e.g., via {@code setRenderFill(true)}).</p>
+     *
+     * @param color {@link Color} to apply to the text. Must not be {@code null}.
+     */
     public void setFillColor(Color color) {
         fillColor = color;
     }
 
+    /**
+     * Sets the background/fill color using RGB components.
+     *
+     * <p>This color is only applied if fill is enabled (e.g., via {@code setFill(true)}).
+     * The RGB values are expected to be in the standard 8-bit range (0 to 255).</p>
+     *
+     * @param r Red component (0–255).
+     * @param g Green component (0–255).
+     * @param b Blue component (0–255).
+     */
     public void setFillColor(int r, int g, int b) {
         setFillColor(new Color(r, g, b));
     }
 
+    /**
+     * Sets the color used for drawing lines and shape borders.
+     *
+     * <p>All subsequent shapes, borders, and lines rendered using this instance
+     * will use the specified color. This color is only applied if line rendering is enabled.
+     * If render line is set to {@code false}, lines and borders will not be drawn.</p>
+     *
+     * @param color {@link Color} to apply to stroke operations. Must not be {@code null}.
+     */
     public void setDrawColor(Color color) {
         drawColor = color;
     }
 
+    /**
+     * Sets the color used for drawing lines and shape borders using RGB components.
+     *
+     * <p>All subsequent shapes, borders, and lines rendered using this instance
+     * will use the specified color. This color is only applied if line rendering is enabled.
+     * If render line is set to {@code false}, lines and borders will not be drawn.
+     * The RGB values are expected to be in the standard 8-bit range (0 to 255).</p>
+     *
+     * @param r Red component (0–255).
+     * @param g Green component (0–255).
+     * @param b Blue component (0–255).
+     */
     public void setDrawColor(int r, int g, int b) {
         setDrawColor(new Color(r, g, b));
     }
@@ -468,22 +660,68 @@ public class GridBoxPDF {
         };
     }
 
+    /**
+     * Writes a text cell containing text using default width (extends to right margin), left alignment, no borders, and default next position (0 = to the right).
+     *
+     * @param content Text content to render inside the cell.
+     */
     public void cell(String content) {
         cell(content, 0, "L", "0", 0);
     }
 
+    /**
+     * Writes a text cell with text content and width, using default left alignment, no borders, and default next position (0 = to the right).
+     *
+     * @param content Text content to render inside the cell.
+     * @param width Width of the cell.
+     */
     public void cell(String content, float width) {
         cell(content, width, "L", "0", 0);
     }
 
+    /**
+     * Writes a text cell with text content, width, and alignment, with no borders and default next cursor position (0 = to the right).
+     *
+     * @param content Text content to render inside the cell.
+     * @param width Width of the cell.
+     * @param alignment Text alignment ({@code "L"}, {@code "C"}, or {@code "R"}).
+     */
     public void cell(String content, float width, String alignment) {
         cell(content, width, alignment, "0", 0);
     }
 
+    /**
+     * Writes a text cell with text content, width, alignment, and borders using the
+     * default next cursor position (0 = to the right).
+     *
+     * @param content Text content to render inside the cell.
+     * @param width Width of the cell.
+     * @param alignment Text alignment ({@code "L"}, {@code "C"}, or {@code "R"}).
+     * @param borders Specifies which borders to draw.
+     */
     public void cell(String content, float width, String alignment, String borders) {
         cell(content, width, alignment, borders, 0);
     }
 
+    /**
+     * Writes a text cell at the current position (rectangular area)
+     * with optional borders, background color, and character string.
+     *
+     * <p>The upper-left corner of the cell corresponds to the current cursor position.
+     * The text can be aligned within the cell. After calling this method, the cursor position
+     * updates according to the specified {@code nextPosition} parameter.</p>
+     *
+     * @param content Text content to render inside the cell.
+     * @param width Width of the cell. If {@code 0}, the cell extends to the right margin of the page.
+     * @param alignment Ttext alignment. Acceptable values are {@code "L"} (left), {@code "C"} (center), or {@code "R"} (right).
+     * @param borders Specifies which borders to draw. String containing combination of {@code 'T'} (top), {@code 'B'} (bottom), {@code 'L'} (left), {@code 'R'} (right), or {@code "1"} for all sides. Pass empty string {@code ""} or {@code "0"} for no border.
+     * @param nextPosition Defines where the cursor is moved after the cell is drawn:
+     *                     <ul>
+     *                       <li>{@code 0}: To the right of the cell (same line).</li>
+     *                       <li>{@code 1}: To the beginning of the next line.</li>
+     *                       <li>{@code 2}: Below the current cell.</li>
+     *                     </ul>
+     */
     public void cell(String content, float width, String alignment, String borders, int nextPosition) {
         if (content == null || content.isBlank()) {
             content = "\u00a0";
@@ -546,18 +784,55 @@ public class GridBoxPDF {
 
     }
 
+    /**
+     * Writes a multi-line cell using default width (extends to right margin), left alignment, and no borders.
+     *
+     * <p>Positions the cursor automatically at the beginning of the next line below the multi-cell once finished.</p>
+     *
+     * @param content Text content to render.
+     */
     public void multiCell(String content) {
         multiCell(content, 0, "J", "");
     }
 
+    /**
+     * Writes a multi-line cell with automatic line wrapping using default left alignment and no borders.
+     *
+     * <p>Positions the cursor automatically at the beginning of the next line below the multi-cell once finished.</p>
+     *
+     * @param content Text content to render.
+     * @param width Width of the cell.
+     */
     public void multiCell(String content, float width) {
         multiCell(content, width, "J", "");
     }
 
+    /**
+     * Writes a multi-line cell with automatic line wrapping, alignment, and no borders.
+     *
+     * <p>Positions the cursor automatically at the beginning of the next line below the multi-cell once finished.</p>
+     *
+     * @param content Text content to render.
+     * @param width Width of the cell.
+     * @param alignment Text alignment ({@code "L"}, {@code "C"}, {@code "R"}, or {@code "J"}).
+     */
     public void multiCell(String content, float width, String alignment) {
         this.multiCell(content, width, alignment, "");
     }
 
+    /**
+     * Writes a multi-line cell with automatic line wrapping.
+     *
+     * <p>Unlike {@code cell()}, this method allows printing text across multiple lines.
+     * Line breaks are performed automatically when the text reaches the right edge of the cell,
+     * or whenever explicit line feed characters ({@code \n}) are encountered in the content.
+     * Once completed, the cursor automatically positions itself at the beginning of the next line below the multi-cell.</p>
+     *
+     * @param content Text content to render. Can contain explicit line breaks ({@code \n}).
+     * @param width Width of the cell. If {@code 0}, the cell extends to the right margin of the page.
+     * @param alignment Text alignment within the cell. Acceptable values are {@code "L"} (left), {@code "C"} (center), {@code "R"} (right), or {@code "J"} (justified).
+     * @param borders Specifies which borders to draw. String containing combination of {@code 'T'} (top), {@code 'B'} (bottom), {@code 'L'} (left), {@code 'R'} (right), or {@code "1"} for all sides. Pass empty string {@code ""} or {@code "0"} for no border.
+     */
     public void multiCell(String content, float width, String alignment, String borders) {
         if (content == null || content.isBlank()) {
             content = "\u00a0";
@@ -623,6 +898,15 @@ public class GridBoxPDF {
         lineBreak(0);
     }
 
+    /**
+     * Renders text inline starting from the current cursor position.
+     *
+     * <p>The text flows naturally from the current coordinates, automatically wrapping
+     * to the next line at the left margin if it reaches the right margin of the page.
+     * Upon completion, the cursor is left positioned immediately after the rendered text.</p>
+     *
+     * @param content Text content to render inline.
+     */
     public void inlineText(String content) {
         if (content == null || content.isBlank()) {
             content = "\u00a0";
@@ -795,6 +1079,18 @@ public class GridBoxPDF {
         return lines;
     }
 
+    /**
+     * Draws a straight line between two specified coordinate points.
+     *
+     * <p>Coordinates are measured relative to the top-left edge of the page.
+     * This operation uses the current draw color and line rendering settings.
+     * If render line is set to {@code false}, the line will not be drawn.</p>
+     *
+     * @param startX Starting horizontal position from the left edge of the page.
+     * @param startY Starting vertical position from the top edge of the page.
+     * @param endX Ending horizontal position from the left edge of the page.
+     * @param endY Ending vertical position from the top edge of the page.
+     */
     public void drawLine(float startX, float startY, float endX, float endY) {
         startX *= pageUnit;
         startY = pageHeight - (startY * pageUnit);
@@ -816,6 +1112,18 @@ public class GridBoxPDF {
         }
     }
 
+    /**
+     * Draws a rectangle defined by its upper-left and lower-right coordinates.
+     *
+     * <p>Coordinates are measured relative to the top-left edge of the page.
+     * The border is rendered using the current draw color if line rendering is enabled.
+     * The interior is filled using the current fill color if fill rendering is enabled.</p>
+     *
+     * @param startX Horizontal position of the upper-left corner from the left edge of the page.
+     * @param startY Vertical position of the upper-left corner from the top edge of the page.
+     * @param endX Horizontal position of the lower-right corner from the left edge of the page.
+     * @param endY Vertical position of the lower-right corner from the top edge of the page.
+     */
     public void drawRectangle(float startX, float startY, float endX, float endY) {
         startX *= pageUnit;
         startY = (pageHeight) - (startY * pageUnit);
@@ -844,34 +1152,17 @@ public class GridBoxPDF {
         }
     }
 
-    public void drawRoundedRectangle(float startX, float startY, float endX, float endY, float ratio) {
-        startX *= pageUnit;
-        startY = (pageHeight) - (startY * pageUnit);
-        float width = (endX * pageUnit) - startX;
-        float height = ((pageHeight) - (endY * pageUnit)) - startY;
-
-        try {
-            writer.saveGraphicsState();
-            writer.setLineWidth(.5f);
-            writer.addRect(startX, startY, width, height);
-
-            if (renderLine && renderFill) {
-                writer.setStrokingColor(drawColor);
-                writer.setNonStrokingColor(fillColor);
-                writer.fillAndStroke();
-            } else if (renderLine) {
-                writer.setStrokingColor(drawColor);
-                writer.stroke();
-            } else if (renderFill) {
-                writer.setNonStrokingColor(fillColor);
-                writer.fill();
-            }
-            writer.restoreGraphicsState();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
+    /**
+     * Draws an image from a file path at the specified coordinates with scaling.
+     *
+     * <p>Coordinates define the upper-left corner relative to the top-left edge of the page.
+     * The image dimensions are adjusted according to the provided scale factor.</p>
+     *
+     * @param imagePath File path to the image.
+     * @param x Horizontal position from the left edge of the page.
+     * @param y Vertical position from the top edge of the page.
+     * @param scale Scaling factor percentage from 1 to 100 applied to the original image dimensions (a value of 0 is treated as 100%).
+     */
     public void drawImage(String imagePath, float x, float y, float scale)  {
         try {
             PDImageXObject pdImage = null;
@@ -900,6 +1191,17 @@ public class GridBoxPDF {
         }
     }
 
+    /**
+     * Draws an image from a byte array at the specified coordinates with scaling.
+     *
+     * <p>Coordinates define the upper-left corner relative to the top-left edge of the page.
+     * The image dimensions are adjusted according to the provided scale factor.</p>
+     *
+     * @param imageData Raw image data as a byte array.
+     * @param x Horizontal position from the left edge of the page.
+     * @param y Vertical position from the top edge of the page.
+     * @param scale Scaling factor percentage from 1 to 100 applied to the original image dimensions (a value of 0 is treated as 100%).
+     */
     public void drawImage(byte[] imageData, float x, float y, float scale)  {
         try {
             byte[] hash = MessageDigest.getInstance("SHA-256").digest(imageData);
@@ -931,26 +1233,41 @@ public class GridBoxPDF {
         }
     }
 
-
-
+    /**
+     * Enables or disables line and border rendering for subsequent draw operations.
+     *
+     * <p>When set to {@code false}, lines, shape outlines, and borders will not be drawn.</p>
+     *
+     * @param renderLine {@code true} to enable line drawing; {@code false} to disable it.
+     */
     public void setRenderLine(boolean renderLine) {
         this.renderLine = renderLine;
     }
 
+    /**
+     * Enables or disables background and interior fill rendering for subsequent draw operations.
+     *
+     * <p>When set to {@code false}, shape interiors and background fills will not be drawn.</p>
+     *
+     * @param renderFill {@code true} to enable fill operations; {@code false} to disable them.
+     */
     public void setRenderFill(boolean renderFill) {
         this.renderFill = renderFill;
     }
 
     /**
-     * Called when a new page is created, before its content is written.
-     * Override to add custom header content.
+     * Hook invoked immediately after a new page is created, before any page content is rendered.
+     *
+     * <p>Override this method to render custom header content (such as logos or titles)
+     * on each new page.</p>
      */
     public void header() {}
 
     /**
-     * Called when a page is finished, or when the document is closed
-     * if the document contains only one page.
-     * Override to add custom footer content.
+     * Hook invoked when the current page is completed, including the last page when the document is closed.
+     *
+     * <p>Override this method to render custom footer content (such as page numbers or footers)
+     * at the bottom of each page.</p>
      */
     public void footer() {}
 

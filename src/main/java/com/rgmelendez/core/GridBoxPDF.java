@@ -661,7 +661,7 @@ public class GridBoxPDF {
     }
 
     /**
-     * Writes a text cell containing text using default width (extends to right margin), left alignment, no borders, and default next position (0 = to the right).
+     * Prints a cell containing text using default width (extends to right margin), left alignment, no borders, and default next position (0 = to the right).
      *
      * @param content Text content to render inside the cell.
      */
@@ -670,7 +670,7 @@ public class GridBoxPDF {
     }
 
     /**
-     * Writes a text cell with text content and width, using default left alignment, no borders, and default next position (0 = to the right).
+     * Prints a cell with text content and width, using default left alignment, no borders, and default next position (0 = to the right).
      *
      * @param content Text content to render inside the cell.
      * @param width Width of the cell.
@@ -680,7 +680,7 @@ public class GridBoxPDF {
     }
 
     /**
-     * Writes a text cell with text content, width, and alignment, with no borders and default next cursor position (0 = to the right).
+     * Prints a cell with text content, width, and alignment, with no borders and default next cursor position (0 = to the right).
      *
      * @param content Text content to render inside the cell.
      * @param width Width of the cell.
@@ -691,7 +691,7 @@ public class GridBoxPDF {
     }
 
     /**
-     * Writes a text cell with text content, width, alignment, and borders using the
+     * Prints a cell with text content, width, alignment, and borders using the
      * default next cursor position (0 = to the right).
      *
      * @param content Text content to render inside the cell.
@@ -785,7 +785,7 @@ public class GridBoxPDF {
     }
 
     /**
-     * Writes a multi-line cell using default width (extends to right margin), left alignment, and no borders.
+     * Prints a multi-line cell using default width (extends to right margin), left alignment, and no borders.
      *
      * <p>Positions the cursor automatically at the beginning of the next line below the multi-cell once finished.</p>
      *
@@ -796,7 +796,7 @@ public class GridBoxPDF {
     }
 
     /**
-     * Writes a multi-line cell with automatic line wrapping using default left alignment and no borders.
+     * Prints a multi-line cell with automatic line wrapping using default left alignment and no borders.
      *
      * <p>Positions the cursor automatically at the beginning of the next line below the multi-cell once finished.</p>
      *
@@ -808,7 +808,7 @@ public class GridBoxPDF {
     }
 
     /**
-     * Writes a multi-line cell with automatic line wrapping, alignment, and no borders.
+     * Prints a multi-line cell with automatic line wrapping, alignment, and no borders.
      *
      * <p>Positions the cursor automatically at the beginning of the next line below the multi-cell once finished.</p>
      *
@@ -821,7 +821,7 @@ public class GridBoxPDF {
     }
 
     /**
-     * Writes a multi-line cell with automatic line wrapping.
+     * Prints a multi-line cell with automatic line wrapping.
      *
      * <p>Unlike {@code cell()}, this method allows printing text across multiple lines.
      * Line breaks are performed automatically when the text reaches the right edge of the cell,

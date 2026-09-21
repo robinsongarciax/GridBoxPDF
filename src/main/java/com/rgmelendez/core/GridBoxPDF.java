@@ -704,8 +704,8 @@ public class GridBoxPDF {
     }
 
     /**
-     * Writes a text cell at the current position (rectangular area)
-     * with optional borders, background color, and character string.
+     * Prints a cell with text content, width, alignment, borders, and background color
+     * at the current cursor position.
      *
      * <p>The upper-left corner of the cell corresponds to the current cursor position.
      * The text can be aligned within the cell. After calling this method, the cursor position

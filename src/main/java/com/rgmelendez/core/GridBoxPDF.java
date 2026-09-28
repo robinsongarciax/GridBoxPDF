@@ -631,7 +631,7 @@ public class GridBoxPDF {
 
     private boolean evaluateAlignment(String alignment) {
         return switch (alignment) {
-            case "L", "R", "J", "C" -> true;
+            case "", "L", "R", "J", "C" -> true;
             default -> false;
         };
     }

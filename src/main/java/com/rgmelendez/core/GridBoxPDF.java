@@ -761,6 +761,12 @@ public class GridBoxPDF {
         float yTop = getY() + marginTop / pageUnit;
         float yBottom = yTop + currentHeightSize / pageUnit;
 
+        if (renderFill) {
+            setRenderLine(false);
+            drawRectangle(xLeft, yTop, xRight, yBottom);
+            setRenderLine(true);
+        }
+
         if (borderSides[0]) {
             drawLine(xLeft, yTop - 0.08f, xLeft, yBottom + 0.08f);
         }
@@ -875,6 +881,12 @@ public class GridBoxPDF {
             float xRight = xLeft + width / pageUnit;
             float yTop = getY() + marginTop / pageUnit;
             float yBottom = yTop + tempH / pageUnit;
+
+            if (renderFill) {
+                setRenderLine(false);
+                drawRectangle(xLeft, yTop, xRight, yBottom);
+                setRenderLine(true);
+            }
 
             if (borderSides[0]) {
                 drawLine(xLeft, yTop - 0.08f, xLeft, yBottom + 0.08f);

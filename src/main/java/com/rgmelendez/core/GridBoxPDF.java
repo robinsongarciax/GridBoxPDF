@@ -247,7 +247,7 @@ public class GridBoxPDF {
     public void addPage() {
         if (pageNumber > 0 && !isFooterWriting && !isHeaderWriting) {
             isFooterWriting = true;
-            this.setXY(0, -(pageBreak - 4)/pageUnit);
+            this.setXY(0, -pageBreak/pageUnit);
             GBFontInfo fontInfo = saveFontState();
             footer();
             restoreFontState(fontInfo);
@@ -282,7 +282,7 @@ public class GridBoxPDF {
     private void printFooter() {
         if (pageNumber > 0) {
             isFooterWriting = true;
-            this.setXY(0, -(pageBreak - 4)/pageUnit);
+            this.setXY(0, -pageBreak/pageUnit);
             GBFontInfo fontInfo = saveFontState();
             footer();
             restoreFontState(fontInfo);
@@ -731,6 +731,10 @@ public class GridBoxPDF {
             throw new IllegalArgumentException ("Alignment option not valid!");
         }
 
+        if ("J".equalsIgnoreCase(alignment)) {
+            throw new IllegalArgumentException ("Justified text alignment is not supported by cell.");
+        }
+
         PDFont font = getFont(fontName, fontStyle);
         float fontSize = this.fontSize;
         GBFont gbFont = new GBFont(font, fontSize, fontColor);
@@ -741,7 +745,7 @@ public class GridBoxPDF {
         try {
             contentWidth = font.getStringWidth(content) / 1000f * fontSize;
         } catch (IllegalArgumentException ex) {
-            throw new IllegalArgumentException("Line breaks are not supported by Cell. Use MultiCell instead.");
+            throw new IllegalArgumentException("Line breaks are not supported by cell. Use multiCell instead.");
         } catch (IOException e) {
             throw new RuntimeException("Content evaluation error!");
         }
@@ -780,7 +784,7 @@ public class GridBoxPDF {
             drawLine(xLeft - 0.08f, yBottom, xRight + 0.08f, yBottom);
         }
 
-        drawText(content, gbFont, tx, ty);
+        drawText(content, gbFont, tx, ty, 0);
 
         switch (nextPosition) {
             case 0 -> xPosition += width;
@@ -849,6 +853,8 @@ public class GridBoxPDF {
             throw new IllegalArgumentException ("Alignment option not valid!");
         }
 
+        boolean[] borderSides = parseBorders(borders);
+
         PDFont font = getFont(fontName, fontStyle);
         float fontSize = this.fontSize;
         GBFont gbFont = new GBFont(font, fontSize, fontColor);
@@ -856,54 +862,72 @@ public class GridBoxPDF {
         float x = xPosition;
         width = width == 0 ? pageWidth - x - marginRight : width * pageUnit;
 
-        List<String> lines = splitIntoLines(content, width, font);
+        String[] paragraphs = content.split("\\R");
+        int totalParagraphs = paragraphs.length;
+        boolean isFirstParagraph = true;
+        boolean isLastParagraph = false;
 
-        int totalLines = lines.size();
-        int last = totalLines - 1;
-        for (int i = 0; i < totalLines; i++) {
-            String line = lines.get (i);
-            float y = yPosition;
+        for (int i = 0; i < totalParagraphs; i++) {
+            if (i == totalParagraphs - 1) isLastParagraph = true;
 
-            float lineWidth = 0;
-            try {
-                lineWidth = font.getStringWidth(line) / 1000f * fontSize;
-            } catch (IOException e) {
-                throw new RuntimeException("Content evaluation error!");
+            String paragraph = paragraphs[i];
+            List<String> lines = splitIntoLines(paragraph, width, font);
+            int totalLines = lines.size();
+            boolean isLastLine = false;
+            for (int j = 0; j < totalLines; j++) {
+                if (j == totalLines - 1 ) isLastLine = true;
+
+                String line = lines.get(j);
+                float y = yPosition;
+
+                float lineWidth = 0;
+                try {
+                    lineWidth = font.getStringWidth(line) / 1000f * fontSize;
+                } catch (IOException e) {
+                    throw new RuntimeException("Content evaluation error!");
+                }
+
+                float ty = y - fontSize;
+                float tx = getXTranslationOffset(alignment, x, lineWidth, width);
+                float tempH = fontSize + 3;
+
+                float xLeft = getX();
+                float xRight = xLeft + width / pageUnit;
+                float yTop = getY() + marginTop / pageUnit;
+                float yBottom = yTop + tempH / pageUnit;
+
+                if (renderFill) {
+                    setRenderLine(false);
+                    drawRectangle(xLeft, yTop, xRight, yBottom);
+                    setRenderLine(true);
+                }
+
+                if (borderSides[0]) {
+                    drawLine(xLeft, yTop - 0.08f, xLeft, yBottom + 0.08f);
+                }
+                if (borderSides[1]) {
+                    drawLine(xRight, yTop - 0.08f, xRight, yBottom + 0.08f);
+                }
+                if (borderSides[2] && isFirstParagraph && j == 0) {
+                    drawLine(xLeft - 0.08f, yTop, xRight + 0.08f, yTop);
+                }
+                if (borderSides[3] && isLastParagraph && isLastLine) {
+                    drawLine(xLeft - 0.08f, yBottom, xRight + 0.08f, yBottom);
+                }
+
+                float wordSpace = 0;
+                if ("J".equalsIgnoreCase(alignment) && !isLastLine) {
+                    float extraWidth = width - 2 - lineWidth;
+                    int length = line.split(" ").length;
+                    if (length > 1) length -= 1;
+                    wordSpace = extraWidth / length;
+                }
+
+                drawText(line, gbFont, tx, ty, wordSpace);
+                yPosition -= tempH;
+                evaluateAvailableSpace();
             }
-
-            float ty = y - fontSize;
-            float tx = getXTranslationOffset(alignment, x, lineWidth, width);
-            float tempH = fontSize + 3;
-
-            boolean[] borderSides = parseBorders(borders);
-
-            float xLeft = getX();
-            float xRight = xLeft + width / pageUnit;
-            float yTop = getY() + marginTop / pageUnit;
-            float yBottom = yTop + tempH / pageUnit;
-
-            if (renderFill) {
-                setRenderLine(false);
-                drawRectangle(xLeft, yTop, xRight, yBottom);
-                setRenderLine(true);
-            }
-
-            if (borderSides[0]) {
-                drawLine(xLeft, yTop - 0.08f, xLeft, yBottom + 0.08f);
-            }
-            if (borderSides[1]) {
-                drawLine(xRight, yTop - 0.08f, xRight, yBottom + 0.08f);
-            }
-            if (borderSides[2] && i == 0) {
-                drawLine(xLeft - 0.08f, yTop, xRight + 0.08f, yTop);
-            }
-            if (borderSides[3] && i == last) {
-                drawLine(xLeft - 0.08f, yBottom, xRight + 0.08f, yBottom);
-            }
-
-            drawText(line, gbFont, tx, ty);
-            yPosition -= tempH;
-            evaluateAvailableSpace();
+            isFirstParagraph = false;
         }
 
         currentHeightSize = fontSize + 3;
@@ -947,7 +971,7 @@ public class GridBoxPDF {
                 String[] words = paragraph.split(" ", -1);
                 for (String word : words) {
                     if (word == null || word.isBlank()) {
-                        word = "\u00a0";
+                        word = "";
                     }
                     float wordWidth = font.getStringWidth(word) / 1000 * fontSize;
                     float extraWidth = !lineBuilder.isEmpty() ? spaceWidth : 0;
@@ -960,7 +984,7 @@ public class GridBoxPDF {
                             lineBuilder.append(word);
                             currentLineWidth += extraWidth + wordWidth;
                         } else {
-                            drawText(lineBuilder.toString(), gbFont, x, ty);
+                            drawText(lineBuilder.toString(), gbFont, x, ty, 0);
                             lineBreak(tempH);
                             evaluateAvailableSpace();
                             x = xPosition;
@@ -974,7 +998,7 @@ public class GridBoxPDF {
                     }
                 }
                 if (!lineBuilder.isEmpty()) {
-                    drawText(lineBuilder.toString(), gbFont, x, ty);
+                    drawText(lineBuilder.toString(), gbFont, x, ty, 0);
                     evaluateAvailableSpace();
                     if (i == totalParagraphs - 1) {
                         xPosition += currentLineWidth;
@@ -993,13 +1017,14 @@ public class GridBoxPDF {
 
     }
 
-    private void drawText(String text, GBFont font, float tx, float ty) {
+    private void drawText(String text, GBFont font, float tx, float ty, float wordSpacing) {
         try {
             writer.saveGraphicsState();
             writer.beginText();
             writer.setFont(font.name(), font.size());
             writer.setNonStrokingColor(font.color());
             writer.newLineAtOffset(tx, ty);
+            writer.setWordSpacing(wordSpacing);
             writer.showText(text);
             writer.endText();
             writer.restoreGraphicsState();
@@ -1050,42 +1075,39 @@ public class GridBoxPDF {
             throw new RuntimeException(e);
         }
         List<String> lines = new ArrayList<>();
-        String[] paragraphs = content.split("\\R");
-        for (String paragraph : paragraphs) {
-            StringBuilder lineBuilder = new StringBuilder();
-            float currentLineWidth = 0;
-            String[] words = paragraph.split(" ");
-            for (String word : words) {
-                if (word == null || word.isBlank()) {
-                    word = "\u00a0";
-                }
-                try {
-                    float wordWidth = font.getStringWidth(word) / 1000 * fontSize;
-                    float extraWidth = !lineBuilder.isEmpty() ? spaceWidth : 0;
-                    if (wordWidth <= width) {
+        StringBuilder lineBuilder = new StringBuilder();
+        float currentLineWidth = 0;
+        String[] words = content.split(" ");
+        for (String word : words) {
+            if (word == null || word.isBlank()) {
+                word = "\u00a0";
+            }
+            try {
+                float wordWidth = font.getStringWidth(word) / 1000 * fontSize;
+                float extraWidth = !lineBuilder.isEmpty() ? spaceWidth : 0;
+                if (wordWidth <= width) {
 
-                        if (currentLineWidth + extraWidth + wordWidth < width) {
-                            if (!lineBuilder.isEmpty()) {
-                                lineBuilder.append(" ");
-                            }
-                            lineBuilder.append(word);
-                            currentLineWidth += extraWidth + wordWidth;
-                        } else {
-                            lines.add(lineBuilder.toString());
-                            lineBuilder.setLength(0);
-                            currentLineWidth = wordWidth;
-                            lineBuilder.append(word);
+                    if (currentLineWidth + extraWidth + wordWidth < width) {
+                        if (!lineBuilder.isEmpty()) {
+                            lineBuilder.append(" ");
                         }
+                        lineBuilder.append(word);
+                        currentLineWidth += extraWidth + wordWidth;
+                    } else {
+                        lines.add(lineBuilder.toString());
+                        lineBuilder.setLength(0);
+                        currentLineWidth = wordWidth;
+                        lineBuilder.append(word);
                     }
-                } catch (IOException ex) {
-                    throw new RuntimeException(ex);
                 }
+            } catch (IOException ex) {
+                throw new RuntimeException(ex);
+            }
 
-            }
-            if (!lineBuilder.isEmpty()) {
-                lines.add(lineBuilder.toString());
-                lineBuilder.setLength(0);
-            }
+        }
+        if (!lineBuilder.isEmpty()) {
+            lines.add(lineBuilder.toString());
+            lineBuilder.setLength(0);
         }
 
         return lines;

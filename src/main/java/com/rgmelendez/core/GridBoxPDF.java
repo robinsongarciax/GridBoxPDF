@@ -55,8 +55,6 @@ import java.util.Map;
  */
 public class GridBoxPDF {
 
-    private String fileName;
-
     private PDDocument document;
     private PDPageContentStream writer;
     private PDRectangle pageFormat = PDRectangle.LETTER;
@@ -145,7 +143,6 @@ public class GridBoxPDF {
     private float marginLeft = 10 * pageUnit;
     private float marginRight = 10 * pageUnit;
     private float marginTop = 10 * pageUnit;
-    private float marginBottom = 0;
     private float pageBreak = 10 * pageUnit;
 
     private boolean renderLine = true;
@@ -365,7 +362,7 @@ public class GridBoxPDF {
      */
     public void setY(float y) {
         y *= pageUnit;
-        float position = y < 0 ? marginBottom : (pageHeight - marginTop);
+        float position = y < 0 ? 0 : (pageHeight - marginTop);
         yPosition = position - y;
     }
 
@@ -414,15 +411,11 @@ public class GridBoxPDF {
         yPosition -= height;
     }
 
-    private void evaluateAvailableSpace() {
+    private void evaluateAvailableSpace(float lineHeight) {
         if (xPosition >= pageWidth - marginRight) {
             lineBreak();
         }
-        if (yPosition <= pageBreak && !isFooterWriting){
-            float x = (xPosition - marginLeft) / pageUnit;
-            this.addPage();
-            this.setX(x);
-        } else if (yPosition <= marginBottom) {
+        if (yPosition - lineHeight <= pageBreak && !isFooterWriting){
             float x = (xPosition - marginLeft) / pageUnit;
             this.addPage();
             this.setX(x);
@@ -739,7 +732,7 @@ public class GridBoxPDF {
         float fontSize = this.fontSize;
         GBFont gbFont = new GBFont(font, fontSize, fontColor);
 
-        evaluateAvailableSpace();
+        evaluateAvailableSpace(fontSize + 3);
 
         float contentWidth = 0;
         try {
@@ -848,7 +841,7 @@ public class GridBoxPDF {
             content = "\u00a0";
         }
 
-        evaluateAvailableSpace();
+        evaluateAvailableSpace(fontSize + 3);
         if (!evaluateAlignment (alignment) ) {
             throw new IllegalArgumentException ("Alignment option not valid!");
         }
@@ -925,7 +918,7 @@ public class GridBoxPDF {
 
                 drawText(line, gbFont, tx, ty, wordSpace);
                 yPosition -= tempH;
-                evaluateAvailableSpace();
+                evaluateAvailableSpace(tempH);
             }
             isFirstParagraph = false;
         }
@@ -947,7 +940,7 @@ public class GridBoxPDF {
         if (content == null || content.isBlank()) {
             content = "\u00a0";
         }
-        evaluateAvailableSpace();
+        evaluateAvailableSpace(fontSize + 3);
         PDFont font = getFont(fontName, fontStyle);
         float fontSize = this.fontSize;
         GBFont gbFont = new GBFont(font, fontSize, fontColor);
@@ -986,7 +979,7 @@ public class GridBoxPDF {
                         } else {
                             drawText(lineBuilder.toString(), gbFont, x, ty, 0);
                             lineBreak(tempH);
-                            evaluateAvailableSpace();
+                            evaluateAvailableSpace(tempH);
                             x = xPosition;
                             y = yPosition;
                             ty = y - fontSize;
@@ -999,7 +992,7 @@ public class GridBoxPDF {
                 }
                 if (!lineBuilder.isEmpty()) {
                     drawText(lineBuilder.toString(), gbFont, x, ty, 0);
-                    evaluateAvailableSpace();
+                    evaluateAvailableSpace(tempH);
                     if (i == totalParagraphs - 1) {
                         xPosition += currentLineWidth;
                     } else {

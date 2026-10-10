@@ -34,7 +34,7 @@ It keeps the flexibility of PDFBox while providing convenient features such as c
 GridBoxPDF pdf = new GridBoxPDF();
 
 pdf.addPage();
-pdf.cell("Hello GridBoxPDF!", 40);
+pdf.cell("Hello GridBoxPDF!");
 
 pdf.close("hello.pdf");
 ```
@@ -106,7 +106,6 @@ GridBoxPDF provides several fonts out of the box:
 * Helvetica
 * Times
 * Courier
-* LiberationSans
 
 They can be used directly:
 
@@ -126,7 +125,7 @@ pdf.setFont("Roboto", "B", 12);
 Text can be written using cells:
 
 ```java
-pdf.cell("Hello GridBoxPDF!", 40);
+pdf.cell("Hello GridBoxPDF!");
 ```
 
 Alignment and borders can be specified when needed:
@@ -202,18 +201,17 @@ The image position is measured from the top-left corner of the physical page.
 
 ## Examples
 
-The repository contains examples demonstrating the main GridBoxPDF features:
+The repository includes seven examples demonstrating the main features of GridBoxPDF:
 
 1. Minimal PDF
-2. Header and Footer
-3. Colors
-4. Tables
-5. Images
-6. Text and multi-line text
-7. ...
-8. ...
+2. Colors
+3. Custom Fonts
+4. Header and Footer
+5. Page Breaks
+6. Tables
+7. Text, Cells, and Multi-line Text
 
-See the `examples` directory for complete source code and generated documents.
+The example source files are located in `src/test/java/com/rgmelendez/examples/`. Supporting resources, if included, are located in `src/test/resources/`.
 
 ## Why GridBoxPDF?
 

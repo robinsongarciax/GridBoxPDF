@@ -19,6 +19,14 @@ jobs:
           distribution: 'temurin'
           cache: 'maven'
 
+      - name: Configurar Maven
+        uses: stCarolas/setup-maven@v5
+        with:
+          maven-version: '3.9.16'
+
+      - name: Verificar versión de Maven
+        run: mvn --version
+
       - name: Importar Clave GPG
         uses: crazy-max/ghaction-import-gpg@v7
         with:

@@ -28,6 +28,28 @@ It keeps the flexibility of PDFBox while providing convenient features such as c
 * Letter portrait pages by default
 * Configurable page margins
 
+
+## Installation
+
+GridBoxPDF is available from Maven Central.
+
+Add the following dependency to your `pom.xml`:
+
+```xml
+<dependency>
+    <groupId>com.rgmelendez</groupId>
+    <artifactId>gridboxpdf</artifactId>
+    <version>1.0.3</version>
+</dependency>
+```
+
+Replace `1.0.3` with the latest available version if necessary.
+
+**Requirements**
+- Java 21 or later
+- Apache PDFBox (included as a transitive dependency)
+
+
 ## Quick Start
 
 ```java

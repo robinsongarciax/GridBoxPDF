@@ -1,0 +1,22 @@
+<settings xmlns="http://apache.org"
+          xmlns:xsi="http://w3.org"
+          xsi:schemaLocation="http://apache.org https://apache.org">
+    <servers>
+        <server>
+            <id>central</id>
+            <username>${env.MAVEN_CENTRAL_USERNAME}</username>
+            <password>${env.MAVEN_CENTRAL_TOKEN}</password>
+        </server>
+    </servers>
+    <profiles>
+        <profile>
+            <id>gpg</id>
+            <properties>
+                <gpg.passphrase>${env.GPG_PASSPHRASE}</gpg.passphrase>
+            </properties>
+        </profile>
+    </profiles>
+    <activeProfiles>
+        <activeProfile>gpg</activeProfile>
+    </activeProfiles>
+</settings>
